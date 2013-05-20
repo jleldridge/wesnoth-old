@@ -139,6 +139,7 @@ function CA_action(action, side, CA_parms)
 end
 
 function wesnoth.wml_actions.micro_ai(cfg)
+    
     -- Set up the [micro_ai] tag functionality for each Micro AI
 
     -- Check that the required common keys are all present and set correctly
@@ -148,6 +149,35 @@ function wesnoth.wml_actions.micro_ai(cfg)
 
     if (cfg.action ~= 'add') and (cfg.action ~= 'delete') and (cfg.action ~= 'change') then
         H.wml_error("[micro_ai] invalid value for action=.  Allowed values: add, delete or change")
+    end
+    
+    ---------Total Defense Micro AI -------------------------------------------
+    if (cfg.ai_type == 'total_defense') then
+        local cfg_hs = {}
+        if (cfg.action ~= 'delete') then
+            cfg = cfg.__parsed
+            --the center point to be defended
+            cfg_hs.defend_x = cfg.defend_x
+            cfg_hs.defend_y = cfg.defend_y
+            --the radius of the area to be defended
+            cfg_hs.radius = cfg.radius
+        end
+
+        local CA_parms = {
+            { 
+                id = 'initialize_total_defense', eval_name = 'initialize_total_defense_eval',
+                exec_name = 'initialize_total_defense_exec', max_score = 999990,
+                cfg_table = {}
+            },
+            {
+                id = 'defend_area', eval_name = 'defend_area_eval', exec_name = 'defend_area_exec',
+                max_score = 999989, cfg_table = cfg_hs
+            }
+        }
+
+        --add, delete, or change the CAs
+        CA_action(cfg.action, cfg.side, CA_parms)
+        return
     end
 
     --------- Healer Support Micro AI - side-wide AI ------------------------------------
